@@ -1,2 +1,0 @@
-# Skillfactory
-My homework
