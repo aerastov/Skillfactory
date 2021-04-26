@@ -145,14 +145,14 @@ class Out_board: # Выводим в консоль обе доски рядом
             if self.size == 10:
                 print("        Твое поле боя:", " " * 22, "Поле боя вражеского AI:")
                 if color == 1:
-                    print("  \033[4mА  Б  В  Г  Д  Е  Ж  З  И  К\033[0m" + " " * 14 + "\033[4mА  Б  В  Г  Д  Е  Ж  З  И  К\033[0m")
+                    print("  \033[4mА  Б  В  Г  Д  Е  Ж  З  И  К\033[0m" + " " * 12 + "\033[4mА  Б  В  Г  Д  Е  Ж  З  И  К\033[0m")
                 else:
-                    print("  А  Б  В  Г  Д  Е  Ж  З  И  К" + " " * 14 + "А  Б  В  Г  Д  Е  Ж  З  И  К")
+                    print("  А  Б  В  Г  Д  Е  Ж  З  И  К" + " " * 12 + "А  Б  В  Г  Д  Е  Ж  З  И  К")
             else:
                 print("   Твое поле боя:", " " * 10, "Поле боя вражеского AI:")
                 if color == 1:
-                    print("  \033[4mА  Б  В  Г  Д  Е\033[0m" + " " * 14 + "\033[4mА  Б  В  Г  Д  Е\033[0m")
-                else: print("  А  Б  В  Г  Д  Е" + " " * 14 + "А  Б  В  Г  Д  Е")
+                    print("  \033[4mА  Б  В  Г  Д  Е\033[0m" + " " * 12 + "\033[4mА  Б  В  Г  Д  Е\033[0m")
+                else: print("  А  Б  В  Г  Д  Е" + " " * 12 + "А  Б  В  Г  Д  Е")
 
             board_user_iter = iter(self.board_user)
             board_comp_iter = iter(self.board_comp)
@@ -168,15 +168,15 @@ class Out_board: # Выводим в консоль обе доски рядом
                     board = board.replace("3", "\033[31m\033[5mХ\033[0m")
                 else:
                     board = board.replace("3", "Х")
-                if self.size == 10:
-                    board = board[:30] + str(i) + board[30:39] + str(i) + board[39:]
-                else:
-                    board = board[:18] + str(i) + board[18:28] + str(i) + board[28:]
+                # if self.size == 10:
+                #     board = board[:30] + str(i) + board[30:39] + str(i) + board[39:]
+                # else:
+                #     board = board[:18] + str(i) + board[18:28] + str(i) + board[28:]
                 print(str(i) + board + str(i))
             if self.size == 10:
-                print("  " + "—" * 28 + " " * 14 + "—" * 28)
+                print("  " + "—" * 28 + " " * 12 + "—" * 28)
             else:
-                print("  " + "—" * 16 + " " * 14 + "—" * 16)
+                print("  " + "—" * 16 + " " * 12 + "—" * 16)
             break
 
 class Shot_processing():
