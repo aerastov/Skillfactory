@@ -1,18 +1,41 @@
+##### README #####
+# Сначала стал делать используя "алгоритм практического задания", но точно если следовать
+# его правилам, то код получается практически копией кода, приложенного к вебинару "разбор проекта"
+# Поэтому часть, отвечающая за расстановку кораблей идентична. После этой первой части программы,
+# решил делать без помощи данных материалов
+# При оценке прошу учесть что выполнены ВСЕ требования, на странице задания C2.5
+#  - Для представления корабля на игровой доске есть класс Ship
+#  - Есть класс доски, на которую будут размещаться корабли
+#  - Корабли находятся на расстоянии минимум одна клетка друг от друга
+#  - При ошибках хода игрока возникает исключение
+#  - Есть исключения для непредвиденных ситуациий
+#    Дополнительно:
+#  - Предложено 2 варианта доски (6х6 и 10х10)
+#  - Отображение информации на поле как в классической игре
+#  - Для ввода координат используются не цифра + цифра, а буква + цифра (как в классике)
+#  - Производится более глубокая обработка введеных пользователем координат (не обязательно
+#  разделять пробелом, можно менять местами, заглавные или строчные руссие символы, итп)
+#  - AI действует как человек: если ранил, то прощупывает соседние клетки чтобы добить,
+#  а не рандмно палит по всей доске как в вебинаре
+
 from random import randint
 from random import choice
 import time
+
+############### НАСТРОЙКИ ИГРЫ ##############
+enemy_visibility = 0 # 0 - Корабли врага скрыты, 1 - раскрыты
+color = 1 # 0 - Вывод игрового поля без цвета, если наблюдается некорректное отображение, 1 - с цветом
+#############################################
 
 clear = "\n" * 2
 print("\nПривет! Давай сыграем в морской бой!")
 print("Есть два варианта игры - поле 6х6 и 7 кораблей, и поле 10х10 на котором 10 кораблей.")
 print("Выиграет сильнейший!")
 try:
-    size = int(
-        input("Выбери размер поля: 6х6 или 10х10 клеток (жми 6, если хочешь маленькое поле, иначе будет 10х10): "))
+    size = int(input("Выбери размер поля: 6х6 или 10х10 клеток (жми 6, если хочешь маленькое поле, иначе будет 10х10): "))
     if size != 6: size = 10
 except ValueError:
     size = 10
-
 
 class Dot:
     def __init__(self, x, y):
@@ -22,8 +45,7 @@ class Dot:
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y
 
-class BoardException(Exception): pass
-class BoardWrongShipException(BoardException):
+class BoardWrongShipException(Exception):
     pass
 
 class Ship:
@@ -79,8 +101,7 @@ class Board:
                 try:
                     self.add_ship(ship)
                     break
-                except BoardWrongShipException:
-                    pass
+                except: pass
 
         self.begin()  # Очищаем ячейки вокруг кораблей
         return self.field
@@ -122,32 +143,40 @@ class Out_board: # Выводим в консоль обе доски рядом
         print(clear)
         while True:
             if self.size == 10:
-                print("        Твое поле боя:", " " * 20, "Поле боя вражеского AI:")
-                print(
-                    "  \033[4mА  Б  В  Г  Д  Е  Ж  З  И  К\033[0m" + " " * 12 + "\033[4mА  Б  В  Г  Д  Е  Ж  З  И  К\033[0m")
+                print("        Твое поле боя:", " " * 22, "Поле боя вражеского AI:")
+                if color == 1:
+                    print("  \033[4mА  Б  В  Г  Д  Е  Ж  З  И  К\033[0m" + " " * 14 + "\033[4mА  Б  В  Г  Д  Е  Ж  З  И  К\033[0m")
+                else:
+                    print("  А  Б  В  Г  Д  Е  Ж  З  И  К" + " " * 14 + "А  Б  В  Г  Д  Е  Ж  З  И  К")
             else:
-                print("   Твое поле боя:", " " * 8, "Поле боя вражеского AI:")
-                print("  \033[4mА  Б  В  Г  Д  Е\033[0m" + " " * 12 + "\033[4mА  Б  В  Г  Д  Е\033[0m")
+                print("   Твое поле боя:", " " * 10, "Поле боя вражеского AI:")
+                if color == 1:
+                    print("  \033[4mА  Б  В  Г  Д  Е\033[0m" + " " * 14 + "\033[4mА  Б  В  Г  Д  Е\033[0m")
+                else: print("  А  Б  В  Г  Д  Е" + " " * 14 + "А  Б  В  Г  Д  Е")
 
             board_user_iter = iter(self.board_user)
             board_comp_iter = iter(self.board_comp)
             for i in range(0, self.size):
                 p2 = str("  ".join(map(str, next(board_comp_iter))))
-                # p2 = p2.replace("2", "0") # Стираем с доски корабли противника (AI)
-                board = str(
-                    "|" + "  ".join(
-                        map(str, next(board_user_iter))) + "|" + " " * 10 + "|" + p2 + "|")  # Собираем строку
+                if enemy_visibility == 0:
+                    p2 = p2.replace("2", "0") # Стираем с доски корабли противника (AI)
+                board = str("|" + "  ".join(map(str, next(board_user_iter))) + "|" + " " * 10 + "|" + p2 + "|")  # Собираем строку
                 board = board.replace("1", "*")  # Тут и далее конвертируем цифры в отображаемые элементы
                 board = board.replace("0", "·")
                 board = board.replace("2", "■")
-                board = board.replace("3", "\033[31m\033[5mХ\033[0m")
-                # if i == 10: y = str(i)
-                # else: y = str(" " + str(i))
+                if color == 1:
+                    board = board.replace("3", "\033[31m\033[5mХ\033[0m")
+                else:
+                    board = board.replace("3", "Х")
+                if self.size == 10:
+                    board = board[:30] + str(i) + board[30:39] + str(i) + board[39:]
+                else:
+                    board = board[:18] + str(i) + board[18:28] + str(i) + board[28:]
                 print(str(i) + board + str(i))
             if self.size == 10:
-                print("  " + "—" * 28 + " " * 12 + "—" * 28)
+                print("  " + "—" * 28 + " " * 14 + "—" * 28)
             else:
-                print("  " + "—" * 16 + " " * 12 + "—" * 16)
+                print("  " + "—" * 16 + " " * 14 + "—" * 16)
             break
 
 class Shot_processing():
@@ -156,7 +185,7 @@ class Shot_processing():
         self.board = board
 
     def step_user(self):
-        print("Сейчас твой ход! Переключись на русский и жми координаты (пример: А0), можно без пробела!")
+        print("Сейчас твой ход! Введи на русском координаты (пример: А0), можно без пробела!")
         while True:  # Цикл проверки на корректность введеных координат (что не стрельнул в занятую ячейку)
             while True:  # Цикл ввода пользователем координат хода
                 user_xy = input("Координаты хода: ")
@@ -210,52 +239,64 @@ class Shot_processing():
         if old_ai_shot is not None: # Если корабль остался недобитым, щупаем в какую сторону добивать
             y = self.old_ai_shot[0]
             x = self.old_ai_shot[1]
-#####################################
-            i = x # Проверяем корабль по горизонтали влево
-            print("Проверка по горизонтали влево")
-            time.sleep(1)
+
+            # print("Начало, получены координаты:", x, y)
             # Надо определить прощупать крестики как слева так и справа, потом двигаться
             # последовательно влево потом вправо до срабатывания выстрела
-            # if x !
-            # try:
-            #     if self.board[y][i - 1] == 3: a = 1
-            # except IndexError: None
-            # try:
-            #     if self.board[y][i + 1] == 3: a = 1
-            # except IndexError: None
+            h = 0
+            if x != 0 and self.board[y][x - 1] == 3: h = 1
+            try:
+                if x != (self.size - 1) and self.board[y][x + 1] == 3: h = 1
+            except IndexError: pass
+            if h == 1: # корабль расположен горизонтально
+                i = x
+                while i >= 1: # движемся влево
+                    if self.board[y][i-1] == 1: break # Если в клетке "мимо" то прерываем движ в эту сторону
+                    if self.board[y][i-1] != 3: return [y, (i-1)]  # Если в клетке нет "ранен" - выстрел
+                    i -= 1
+                i = x # движемся вправо
+                a = 9 if self.size == 10 else 5
+                while i <= a:
+                    if self.board[y][i+1] == 1: break # Если в клетке "мимо" то прерываем движ в эту сторону
+                    if self.board[y][i+1] != 3: return [y, (i+1)]  # Если в клетке нет "ранен" или "мимо" - выстрел
+                    i += 1
 
-            while i >= 2:
-                if self.board[y][i-1] != 3: break # если в этом направлении нет ранения, прекращаем движ
-                print("Прошли проверку что есть ранение")
-                if self.board[y][i-2] == 1: break # Если в клетке "мимо" то прерываем движ в эту сторону
-                print("Прошли проверку что после ранения нет звездочки")
-                if self.board[y][i-2] != 3: return [y, (i-2)]  # Если в клетке нет "ранен" - выстрел
-                print("Прошли проверку что после ранения нет звездочки, пусто, корабль")
-                print("i -= 1, повтор цикла")
-                i -= 1
-            print("Проверка по горизонтали вправо")
-            time.sleep(1)
-            i = x # Проверяем корабль по горизонтали вправо
-            a = 8 if self.size == 10 else 4
-            while i <= a:
-                if self.board[y][i+1] != 3: break # если в этом направлении нет ранения, прекращаем движ
-                if self.board[y][i+2] == 1: break # Если в клетке "мимо" то прерываем движ в эту сторону
-                if self.board[y][i+2] != 3: return [y, (i+2)]  # Если в клетке нет "ранен" или "мимо" - выстрел
-                i += 1
+            v = 0
+            if y != 0 and self.board[y-1][x] == 3: v = 1
+            try:
+                if y != (self.size - 1) and self.board[y+1][x] == 3: v = 1
+            except IndexError: pass
 
-            print("Рандомный выстрел после первого попадания")
-            time.sleep(1)
+            if v == 1: # корабль расположен вертикально
+                i = y
+                while i >= 1: # движемся вверх
+                    if self.board[i - 1][x] == 1: break  # Если в клетке "мимо" то прерываем движ в эту сторону
+                    if self.board[i - 1][x] != 3: return [(i - 1), x]  # Если в клетке нет "ранен" - выстрел
+                    i -= 1
+                i = y # движемся вниз
+                a = 9 if self.size == 10 else 5
+                while i <= a:
+                    if self.board[i+1][x] == 1: break # Если в клетке "мимо" то прерываем движ в эту сторону
+                    if self.board[i+1][x] != 3: return [(i + 1), x]  # Если в клетке нет "ранен" или "мимо" - выстрел
+                    i += 1
+
+            # print("Рандомный выстрел после первого попадания")
             c = 0
             while c < 10: # А если было первое попадание, то стреляем наугад в соседнюю клетку
                 a = randint(0, 1) # Выбор направления выстрела (0 - горизонталь / 1 - вертикаль)
                 b = choice([-1, 1]) # Выбор стороны смещения выстрела
-                print(a,b)
-                c -= 1
+                # print(a,b)
+                c += 1
                 try:
-                    if a == 0 and self.board[y][x+b] == (0 or 2): return [y, (x + b)]
-                    if a == 1 and self.board[y+b][x] == (0 or 2): return [(y + b), x]
+                    if a == 0:
+                        if x != 0 and b != -1: # рандомный выстрел после ранения не должен перескочить на противположную сторону
+                            if self.board[y][x+b] == 0 or self.board[y][x+b] == 2: return [y, (x + b)]
+                    if a == 1:
+                        if y != 0 and b != -1:
+                            if self.board[y+b][x] == 0 or self.board[y+b][x] == 2: return [(y + b), x]
                 except IndexError:
-                    print("отловлена ошибка: IndexError: list index out of range")
+                    pass
+                    # print("отловлена ошибка: IndexError: list index out of range")
 
 
         while True: # Если недобитых кораблей небыло, стреляем наугад
@@ -263,8 +304,6 @@ class Shot_processing():
             x = randint(0, (self.size - 1))
             if self.board[y][x] == 0 or self.board[y][x] == 2: break
             # time.sleep(1)
-
-
 
         return [y, x]
 
@@ -298,7 +337,7 @@ class Shot_processing():
                 if self.board[i][x] in range(0, 2): break
                 else: ship.append(self.board[i][x])
 
-            print("тест, вычисление корабля: ", ship)
+            # print("тест, вычисление корабля: ", ship)
             if len(ship) * 3 == sum(ship): return "убил"
             return "ранил"
 
@@ -383,10 +422,11 @@ class Game:
 
     def go(self):
         board = Out_board(self.size, self.board_user, self.board_comp)
-        result = Shot_processing(self.size, self.board_comp)
+        # result = Shot_processing(self.size, self.board_comp)
         old_ai_shot = None
         board.print_board()
         while True: # общий цикл игры
+            result = Shot_processing(self.size, self.board_comp)
             while True: # цикл игрока
                 user_shot = result.step_user()
                 result_shot = result.result_shot(user_shot)
@@ -400,10 +440,9 @@ class Game:
                     break
                 if result_shot == "мимо":
                     print("Теперь враг целится, сейчас будет выстрел!")
-                    time.sleep(2)
+                    time.sleep(4)
                     break
             if victory: break
-            print("стреляет комп")
             result = Shot_processing(self.size, self.board_user)
             while True:  # цикл компа
                 ai_shot = result.step_ai(old_ai_shot)
@@ -417,9 +456,10 @@ class Game:
                 if victory:
                     print("Ты потерпел поражение! Компьютер уничтожил все твои корабли, и теперь идет завоевывать весь мир!")
                     break
+                if result_shot == "мимо": break
                 if result_shot == "ранил": old_ai_shot = ai_shot
                 if result_shot == "убил": old_ai_shot = None
-                # if result_shot == "мимо":
+
             if victory: break
 
     def start(self):
