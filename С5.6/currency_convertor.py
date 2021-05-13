@@ -7,11 +7,12 @@ bot = telebot.TeleBot(TOKEN_BOT)
 @bot.message_handler(commands=['start', 'help'])
 def start(message: telebot.types.Message):
     text = "Привет!\n" \
-           "Введите <валюта 1> <валюта, в которую конвертируем> <кол-во валюты 1>\n" \
+           "Введите <конвертируемая валюта> <валюта, в которую конвертируем> <кол-во валюты>\n" \
            "Пример:\n" \
-           "RUB EUR 5000\n" \
+           "рубль доллар 5000\n" \
            "/values - Увидеть список доступных валют"
     bot.send_message(message.chat.id, text)
+
 
 @bot.message_handler(commands=['values'])
 def values(message: telebot.types.Message):
@@ -19,6 +20,7 @@ def values(message: telebot.types.Message):
     for i in list_of_currencies.keys():
         text = '\n'.join((text, i))
     bot.reply_to(message, text)
+
 
 @bot.message_handler(content_types=['text'])
 def converter(message: telebot.types.Message):
