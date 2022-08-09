@@ -61,7 +61,7 @@ def f_step_python(a,b,c):
         if d.find('-') == 2: c = str(c[0] + python_symbol + c[2])
         return [a, b, c]
 
-    d = str(a[2] + b[2] + c[2]) # Вытгрыш по вертикали третий ряд
+    d = str(a[2] + b[2] + c[2]) # Выигрыш по вертикали третий ряд
     if len(d.replace(python_symbol, "")) == 1 and "-" in d:
         if d.find('-') == 0: a = str(a[:2] + python_symbol)
         if d.find('-') == 1: b = str(b[:2] + python_symbol)
@@ -207,5 +207,16 @@ while True:  # цикл начала новой игры
         print(clear)
         a, b, c = str("---"), str("---"), str("---")
         print_abc(a, b, c)
+
+    if winner == "user":
+        print("ТЫ ВЫИГРАЛ !!!")
+        print_abc(a, b, c)
+        go = input("Хочешь еще раз? Если да, то жми Y: ")
+        if go == "Y" or go == "y" or go == "Н" or go == "н":
+            print(clear, "Начнем снова!")
+            a, b, c = str("---"), str("---"), str("---")
+            print_abc(a, b, c)
+        else:
+            break
 
 print("Спасибо за игру!!! Пока!")
